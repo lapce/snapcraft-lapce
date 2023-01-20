@@ -1,0 +1,60 @@
+name: lapce
+adopt-info: lapce
+version: 0.2.5
+base: core22
+summary: Lightning-fast and Powerful Code Editor written in Rust!
+description: |
+  Lapce  is an open source code editor written in Rust.
+  By utilising native GUI and GPU rendering, and with the
+  performance Rust provides, Lapce is one of the fastest code editors out there.
+title: Lapce
+# icon: logo.png
+website: https://lapce.dev
+source-code: https://github.com/lapce/lapce.git
+issues: https://github.com/lapce/lapce/issues
+license: Apache-2.0
+grade: devel
+confinement: devmode
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+
+apps:
+  lapce:
+    command: bin/lapce
+    environment:
+      SHELL: bash
+      LC_ALL: C.UTF-8
+      SNAPCRAFT_ARCH_TRIPLET: ${SNAPCRAFT_ARCH_TRIPLET}
+      __EGL_VENDOR_LIBRARY_DIRS: $SNAP/etc/glvnd/egl_vendor.d:$SNAP/usr/share/glvnd/egl_vendor.d
+      LIBGL_DRIVERS_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/dri
+      LIBVA_DRIVERS_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/dri
+      HOME: "$SNAP_USER_DATA"
+      XDG_CACHE_HOME: "$SNAP_USER_DATA/.cache"
+    # extensions: [gnome]
+    plugs:
+      - home
+      - opengl
+      - network
+
+parts:
+  lapce:
+    source: https://github.com/lapce/lapce/archive/refs/tags/v0.2.5.zip
+    source-type: zip
+    source-checksum: sha512/806556955592358be45dd80edbe415f152f46047e786072bfd5ed1eba94073ccef16587c73a1ea0fcec8fff4684603872a3b9b1086df642dcb195479e1ac4e0b
+    plugin: rust
+    override-build: |
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
+      source $HOME/.cargo/env
+      cd lapce-*
+      cargo install --bin lapce --profile release-lto --root $SNAPCRAFT_PART_INSTALL --path .
+    build-packages:
+      - cmake
+      - pkg-config
+      - libfontconfig-dev
+      - libgtk-3-dev
+      - cargo
+    stage-packages:
+      - libgtk-3-0
+      - libfontconfig1
